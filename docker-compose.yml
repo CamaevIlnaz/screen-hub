@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: screen-hub-db
+    restart: unless-stopped
+    ports:
+      - '${POSTGRES_PORT:-5432}:6400'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-screen_hub}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-screen_hub}
+      POSTGRES_DB: ${POSTGRES_DB:-screen_hub_proxy}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-screen_hub} -d ${POSTGRES_DB:-screen_hub_proxy}',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
