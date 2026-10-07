@@ -1,0 +1,95 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+model User {
+  id           Int    @id @default(autoincrement())
+  login        String @unique
+  passwordHash String @map("password_hash")
+  name         String
+  role         Role   @default(user)
+
+  @@map("users")
+}
+
+model Project {
+  id           String   @id
+  name         String
+  description  String?
+  lastModified DateTime @updatedAt
+
+  sections  Section[]
+  createdAt DateTime  @default(now())
+
+  @@map("project")
+}
+
+model Section {
+  id           String   @id
+  projectId    String
+  name         String
+  description  String?
+  lastModified DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  groups    Group[]
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@map("section")
+}
+
+model Group {
+  id          String  @id
+  sectionId   String
+  name        String
+  description String?
+
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  frames    Frame[]
+  createdAt DateTime @default(now())
+
+  @@index([sectionId])
+  @@map("group")
+}
+
+model Frame {
+  id          String  @id
+  groupId     String
+  name        String
+  description String?
+
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  versions Version[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId])
+  @@map("frame")
+}
+
+model Version {
+  id          Int      @id @default(autoincrement())
+  frameId     String
+  version     String
+  description String?
+  filename    String
+  createdAt   DateTime @default(now())
+
+  frame Frame @relation(fields: [frameId], references: [id], onDelete: Cascade)
+
+  @@index([frameId])
+  @@map("version")
+}
