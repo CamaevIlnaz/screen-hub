@@ -5,6 +5,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import configuration from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
+import { GroupsModule } from './modules/groups/groups.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { SectionsModule } from './modules/sections/sections.module';
 import { UsersModule } from './modules/users/users.module';
@@ -22,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     ProjectsModule,
     SectionsModule,
+    GroupsModule,
   ],
   providers: [
     {
