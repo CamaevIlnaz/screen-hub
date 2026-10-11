@@ -26,7 +26,7 @@ export class ProjectResponseDto {
 
   @ApiPropertyOptional({
     example: 'projects/1/preview.png',
-    description: 'Путь к файлу превью относительно uploads',
+    description: 'Путь к файлу превью относительно uploads (URL: /uploads/{preview})',
     nullable: true,
   })
   preview!: string | null;

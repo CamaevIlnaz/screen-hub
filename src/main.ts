@@ -41,7 +41,12 @@ async function bootstrap() {
   );
 
   await app.register(fastifyCookie);
-  await app.register(fastifyMultipart);
+  await app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 20 * 1024 * 1024,
+      files: 1,
+    },
+  });
 
   if (!existsSync(uploadsPath)) {
     mkdirSync(uploadsPath, { recursive: true });

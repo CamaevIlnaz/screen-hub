@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
@@ -9,9 +8,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -22,11 +24,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
 import { Public } from '../../common/decorators/public.decorator';
 import { ErrorResponseDto } from '../auth/dto/error-response.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectResponseDto } from './dto/project-response.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { parseProjectMultipart } from './multipart.util';
 import { ProjectsService } from './projects.service';
 
 @ApiTags('projects')
@@ -63,6 +67,8 @@ export class ProjectsController {
 
   @Post()
   @ApiCookieAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateProjectDto })
   @ApiOperation({ summary: 'Создать проект' })
   @ApiCreatedResponse({
     description: 'Проект создан',
@@ -76,12 +82,15 @@ export class ProjectsController {
     description: 'Требуется авторизация',
     type: ErrorResponseDto,
   })
-  create(@Body() dto: CreateProjectDto): Promise<ProjectResponseDto> {
-    return this.projectsService.create(dto);
+  async create(@Req() request: FastifyRequest): Promise<ProjectResponseDto> {
+    const payload = await parseProjectMultipart(request);
+    return this.projectsService.create(payload);
   }
 
   @Patch(':id')
   @ApiCookieAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateProjectDto })
   @ApiOperation({ summary: 'Обновить проект' })
   @ApiParam({ name: 'id', type: Number, description: 'Идентификатор проекта' })
   @ApiOkResponse({
@@ -100,11 +109,12 @@ export class ProjectsController {
     description: 'Проект не найден',
     type: ErrorResponseDto,
   })
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateProjectDto,
+    @Req() request: FastifyRequest,
   ): Promise<ProjectResponseDto> {
-    return this.projectsService.update(id, dto);
+    const payload = await parseProjectMultipart(request);
+    return this.projectsService.update(id, payload);
   }
 
   @Delete(':id')

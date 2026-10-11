@@ -10,6 +10,7 @@ import { GroupsModule } from './modules/groups/groups.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { SectionsModule } from './modules/sections/sections.module';
 import { UsersModule } from './modules/users/users.module';
+import { VersionsModule } from './modules/versions/versions.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { PrismaModule } from './prisma/prisma.module';
     SectionsModule,
     GroupsModule,
     FramesModule,
+    VersionsModule,
   ],
   providers: [
     {

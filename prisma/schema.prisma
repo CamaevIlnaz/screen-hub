@@ -87,15 +87,15 @@ model Frame {
 
 model Version {
   id          Int      @id @default(autoincrement())
-  figmaId     String?
   frameId     Int
-  version     String
+  version     Int
   description String?
   filename    String
   createdAt   DateTime @default(now())
 
   frame Frame @relation(fields: [frameId], references: [id], onDelete: Cascade)
 
+  @@unique([frameId, version])
   @@index([frameId])
   @@map("version")
 }

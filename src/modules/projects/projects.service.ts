@@ -1,13 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Project } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectResponseDto } from './dto/project-response.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import type { ProjectMultipartPayload } from './multipart.util';
+import { ProjectStorageService } from './project-storage.service';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly projectStorage: ProjectStorageService,
+  ) {}
 
   async findAll(): Promise<ProjectResponseDto[]> {
     const projects = await this.prisma.project.findMany({
@@ -26,49 +33,107 @@ export class ProjectsService {
     return this.toResponse(project);
   }
 
-  async create(dto: CreateProjectDto): Promise<ProjectResponseDto> {
+  async create(payload: ProjectMultipartPayload): Promise<ProjectResponseDto> {
+    if (!payload.name) {
+      throw new BadRequestException('Название проекта обязательно');
+    }
+
     const project = await this.prisma.project.create({
       data: {
-        name: dto.name,
-        description: dto.description,
-        figmaId: dto.figmaId,
-        preview: dto.preview,
+        name: payload.name,
+        description: payload.description,
+        figmaId: payload.figmaId,
       },
     });
 
-    return this.toResponse(project);
+    if (!payload.preview) {
+      return this.toResponse(project);
+    }
+
+    const preview = this.projectStorage.savePreview(project.id, payload.preview);
+
+    try {
+      const updated = await this.prisma.project.update({
+        where: { id: project.id },
+        data: { preview },
+      });
+
+      return this.toResponse(updated);
+    } catch (error) {
+      this.projectStorage.deleteFile(preview);
+      throw error;
+    }
   }
 
-  async update(id: number, dto: UpdateProjectDto): Promise<ProjectResponseDto> {
-    await this.ensureExists(id);
+  async update(
+    id: number,
+    payload: ProjectMultipartPayload,
+  ): Promise<ProjectResponseDto> {
+    const existing = await this.prisma.project.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Проект не найден');
+    }
 
-    const project = await this.prisma.project.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        description: dto.description,
-        figmaId: dto.figmaId,
-        preview: dto.preview,
-      },
-    });
+    const hasFields =
+      payload.name !== undefined ||
+      payload.description !== undefined ||
+      payload.figmaId !== undefined ||
+      payload.preview !== undefined;
 
-    return this.toResponse(project);
+    if (!hasFields) {
+      throw new BadRequestException('Нужно передать хотя бы одно поле для обновления');
+    }
+
+    if (payload.name !== undefined && !payload.name) {
+      throw new BadRequestException('Название проекта не может быть пустым');
+    }
+
+    let preview = existing.preview;
+    let previousPreview: string | null | undefined;
+
+    if (payload.preview) {
+      previousPreview = existing.preview;
+      preview = this.projectStorage.savePreview(id, payload.preview);
+    }
+
+    try {
+      const project = await this.prisma.project.update({
+        where: { id },
+        data: {
+          ...(payload.name !== undefined ? { name: payload.name } : {}),
+          ...(payload.description !== undefined
+            ? { description: payload.description }
+            : {}),
+          ...(payload.figmaId !== undefined ? { figmaId: payload.figmaId } : {}),
+          ...(payload.preview ? { preview } : {}),
+        },
+      });
+
+      if (previousPreview && previousPreview !== preview) {
+        this.projectStorage.deleteFile(previousPreview);
+      }
+
+      return this.toResponse(project);
+    } catch (error) {
+      if (previousPreview && preview && preview !== previousPreview) {
+        this.projectStorage.deleteFile(preview);
+      }
+      throw error;
+    }
   }
 
   async remove(id: number): Promise<void> {
-    await this.ensureExists(id);
-    await this.prisma.project.delete({ where: { id } });
-  }
-
-  private async ensureExists(id: number): Promise<void> {
-    const project = await this.prisma.project.findUnique({
+    const existing = await this.prisma.project.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, preview: true },
     });
 
-    if (!project) {
+    if (!existing) {
       throw new NotFoundException('Проект не найден');
     }
+
+    await this.prisma.project.delete({ where: { id } });
+    this.projectStorage.deleteFile(existing.preview);
   }
 
   private toResponse(project: Project): ProjectResponseDto {
