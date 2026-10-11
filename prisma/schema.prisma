@@ -24,9 +24,11 @@ model User {
 }
 
 model Project {
-  id           String   @id
+  id           Int      @id @default(autoincrement())
+  figmaId      String?
   name         String
   description  String?
+  preview      String?
   lastModified DateTime @updatedAt
 
   sections  Section[]
@@ -36,23 +38,25 @@ model Project {
 }
 
 model Section {
-  id           String   @id
-  projectId    String
+  id           Int      @id @default(autoincrement())
+  figmaId      String?
+  projectId    Int
   name         String
   description  String?
   lastModified DateTime @updatedAt
 
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   groups    Group[]
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([projectId])
   @@map("section")
 }
 
 model Group {
-  id          String  @id
-  sectionId   String
+  id          Int     @id @default(autoincrement())
+  figmaId     String?
+  sectionId   Int
   name        String
   description String?
 
@@ -65,8 +69,9 @@ model Group {
 }
 
 model Frame {
-  id          String  @id
-  groupId     String
+  id          Int     @id @default(autoincrement())
+  figmaId     String?
+  groupId     Int
   name        String
   description String?
 
@@ -82,7 +87,8 @@ model Frame {
 
 model Version {
   id          Int      @id @default(autoincrement())
-  frameId     String
+  figmaId     String?
+  frameId     Int
   version     String
   description String?
   filename    String
