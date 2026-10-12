@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient, Role, UploadType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { copyFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -179,6 +179,7 @@ async function main() {
         version: versionNumber,
         description: versionDescriptions[i],
         filename,
+        uploadType: UploadType.manual,
       },
     });
   }
@@ -192,6 +193,7 @@ async function main() {
       version: 1,
       description: 'Первая версия макета',
       filename: passwordResetFilename,
+      uploadType: UploadType.manual,
     },
   });
 

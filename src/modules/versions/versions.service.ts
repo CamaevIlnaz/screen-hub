@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Version } from '@prisma/client';
+import { UploadType, Version } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { VersionResponseDto } from './dto/version-response.dto';
 import type { UploadedVersionFile } from './version-storage.service';
@@ -78,6 +78,7 @@ export class VersionsService {
           version: nextVersion,
           filename,
           description,
+          uploadType: UploadType.manual,
         },
       });
 
@@ -170,6 +171,7 @@ export class VersionsService {
       version: version.version,
       description: version.description,
       filename: version.filename,
+      uploadType: version.uploadType,
       createdAt: version.createdAt,
     };
   }

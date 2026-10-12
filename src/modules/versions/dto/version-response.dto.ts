@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UploadType } from '@prisma/client';
 
 export class VersionResponseDto {
   @ApiProperty({ example: 1, description: 'Идентификатор версии' })
@@ -22,6 +23,13 @@ export class VersionResponseDto {
     description: 'Путь к файлу относительно uploads (URL: /uploads/{filename})',
   })
   filename!: string;
+
+  @ApiProperty({
+    enum: UploadType,
+    example: UploadType.manual,
+    description: 'Тип загрузки: ручная или автоматическая',
+  })
+  uploadType!: UploadType;
 
   @ApiProperty({
     example: '2026-10-11T12:00:00.000Z',

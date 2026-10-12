@@ -13,6 +13,11 @@ enum Role {
   user
 }
 
+enum UploadType {
+  manual
+  automatic
+}
+
 model User {
   id           Int    @id @default(autoincrement())
   login        String @unique
@@ -86,12 +91,13 @@ model Frame {
 }
 
 model Version {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   frameId     Int
   version     Int
   description String?
   filename    String
-  createdAt   DateTime @default(now())
+  uploadType  UploadType @default(manual)
+  createdAt   DateTime   @default(now())
 
   frame Frame @relation(fields: [frameId], references: [id], onDelete: Cascade)
 

@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -14,6 +15,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -36,6 +38,11 @@ export class GroupFramesController {
     type: Number,
     description: 'Идентификатор группы',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Поиск по названию и описанию',
+  })
   @ApiOkResponse({
     description: 'Список фреймов группы',
     type: [FrameResponseDto],
@@ -46,8 +53,9 @@ export class GroupFramesController {
   })
   findAll(
     @Param('groupId', ParseIntPipe) groupId: number,
+    @Query('search') search?: string,
   ): Promise<FrameResponseDto[]> {
-    return this.framesService.findAllByGroup(groupId);
+    return this.framesService.findAllByGroup(groupId, search);
   }
 
   @Post()

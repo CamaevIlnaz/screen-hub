@@ -9,11 +9,26 @@ import { UpdateFrameDto } from './dto/update-frame.dto';
 export class FramesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllByGroup(groupId: number): Promise<FrameResponseDto[]> {
+  async findAllByGroup(
+    groupId: number,
+    search?: string,
+  ): Promise<FrameResponseDto[]> {
     await this.ensureGroupExists(groupId);
 
+    const query = search?.trim();
+
     const frames = await this.prisma.frame.findMany({
-      where: { groupId },
+      where: {
+        groupId,
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { updatedAt: 'desc' },
     });
 
