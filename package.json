@@ -24,10 +24,14 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed",
     "prisma:studio": "prisma studio",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",

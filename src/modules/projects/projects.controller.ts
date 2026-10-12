@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import {
@@ -21,6 +22,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -41,12 +43,17 @@ export class ProjectsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Список проектов' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Поиск по названию и описанию',
+  })
   @ApiOkResponse({
     description: 'Список проектов',
     type: [ProjectResponseDto],
   })
-  findAll(): Promise<ProjectResponseDto[]> {
-    return this.projectsService.findAll();
+  findAll(@Query('search') search?: string): Promise<ProjectResponseDto[]> {
+    return this.projectsService.findAll(search);
   }
 
   @Public()

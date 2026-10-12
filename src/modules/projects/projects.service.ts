@@ -16,8 +16,18 @@ export class ProjectsService {
     private readonly projectStorage: ProjectStorageService,
   ) {}
 
-  async findAll(): Promise<ProjectResponseDto[]> {
+  async findAll(search?: string): Promise<ProjectResponseDto[]> {
+    const query = search?.trim();
+
     const projects = await this.prisma.project.findMany({
+      where: query
+        ? {
+            OR: [
+              { name: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
       orderBy: { lastModified: 'desc' },
     });
 

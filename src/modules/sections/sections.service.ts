@@ -9,11 +9,26 @@ import { UpdateSectionDto } from './dto/update-section.dto';
 export class SectionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllByProject(projectId: number): Promise<SectionResponseDto[]> {
+  async findAllByProject(
+    projectId: number,
+    search?: string,
+  ): Promise<SectionResponseDto[]> {
     await this.ensureProjectExists(projectId);
 
+    const query = search?.trim();
+
     const sections = await this.prisma.section.findMany({
-      where: { projectId },
+      where: {
+        projectId,
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { lastModified: 'desc' },
     });
 

@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -14,6 +15,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -36,6 +38,11 @@ export class SectionGroupsController {
     type: Number,
     description: 'Идентификатор раздела',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Поиск по названию и описанию',
+  })
   @ApiOkResponse({
     description: 'Список групп раздела',
     type: [GroupResponseDto],
@@ -46,8 +53,9 @@ export class SectionGroupsController {
   })
   findAll(
     @Param('sectionId', ParseIntPipe) sectionId: number,
+    @Query('search') search?: string,
   ): Promise<GroupResponseDto[]> {
-    return this.groupsService.findAllBySection(sectionId);
+    return this.groupsService.findAllBySection(sectionId, search);
   }
 
   @Post()

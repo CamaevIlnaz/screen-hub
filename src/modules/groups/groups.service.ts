@@ -9,11 +9,26 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 export class GroupsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllBySection(sectionId: number): Promise<GroupResponseDto[]> {
+  async findAllBySection(
+    sectionId: number,
+    search?: string,
+  ): Promise<GroupResponseDto[]> {
     await this.ensureSectionExists(sectionId);
 
+    const query = search?.trim();
+
     const groups = await this.prisma.group.findMany({
-      where: { sectionId },
+      where: {
+        sectionId,
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { createdAt: 'desc' },
     });
 

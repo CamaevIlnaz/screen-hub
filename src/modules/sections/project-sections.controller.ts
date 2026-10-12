@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -14,6 +15,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -36,6 +38,11 @@ export class ProjectSectionsController {
     type: Number,
     description: 'Идентификатор проекта',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Поиск по названию и описанию',
+  })
   @ApiOkResponse({
     description: 'Список разделов проекта',
     type: [SectionResponseDto],
@@ -46,8 +53,9 @@ export class ProjectSectionsController {
   })
   findAll(
     @Param('projectId', ParseIntPipe) projectId: number,
+    @Query('search') search?: string,
   ): Promise<SectionResponseDto[]> {
-    return this.sectionsService.findAllByProject(projectId);
+    return this.sectionsService.findAllByProject(projectId, search);
   }
 
   @Post()
