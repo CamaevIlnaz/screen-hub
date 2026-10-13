@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SyncStatus } from '@prisma/client';
 
 export class SectionResponseDto {
   @ApiProperty({ example: 1, description: 'Идентификатор раздела' })
@@ -23,6 +24,29 @@ export class SectionResponseDto {
     nullable: true,
   })
   figmaId!: string | null;
+
+  @ApiPropertyOptional({
+    enum: SyncStatus,
+    example: SyncStatus.success,
+    description:
+      'Статус последней синхронизации с Figma (null — ещё не синхронизировался)',
+    nullable: true,
+  })
+  syncStatus!: SyncStatus | null;
+
+  @ApiPropertyOptional({
+    example: 'Фрейм «Экран входа» (3:111) не найден в Figma',
+    description: 'Ошибки последней синхронизации с Figma',
+    nullable: true,
+  })
+  syncError!: string | null;
+
+  @ApiPropertyOptional({
+    example: '2026-10-13T03:00:00.000Z',
+    description: 'Дата последней синхронизации с Figma',
+    nullable: true,
+  })
+  figmaSyncedAt!: Date | null;
 
   @ApiProperty({
     example: '2026-10-11T15:00:00.000Z',

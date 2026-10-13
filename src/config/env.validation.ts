@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   Min,
   validateSync,
 } from 'class-validator';
@@ -54,6 +55,12 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   PUBLIC_DIR?: string;
+
+  @IsOptional()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'FIGMA_SYNC_TIME должен быть в формате HH:mm',
+  })
+  FIGMA_SYNC_TIME?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

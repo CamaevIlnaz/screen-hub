@@ -111,6 +111,9 @@ export class SectionsService {
       name: section.name,
       description: section.description,
       figmaId: section.figmaId,
+      syncStatus: section.syncStatus,
+      syncError: section.syncError,
+      figmaSyncedAt: section.figmaSyncedAt,
       lastModified: section.lastModified,
       createdAt: section.createdAt,
     };

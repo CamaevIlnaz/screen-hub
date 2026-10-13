@@ -58,35 +58,27 @@ export class VersionsService {
   ): Promise<VersionResponseDto> {
     await this.ensureFrameExists(frameId);
 
-    const latest = await this.prisma.version.findFirst({
-      where: { frameId },
-      orderBy: { version: 'desc' },
-      select: { version: true },
+    const version = await this.createVersion(frameId, file, {
+      description,
+      uploadType: UploadType.manual,
     });
 
-    const nextVersion = (latest?.version ?? 0) + 1;
-    const filename = this.versionStorage.saveVersionFile(
-      frameId,
-      nextVersion,
-      file,
-    );
+    return this.toResponse(version);
+  }
 
-    try {
-      const version = await this.prisma.version.create({
-        data: {
-          frameId,
-          version: nextVersion,
-          filename,
-          description,
-          uploadType: UploadType.manual,
-        },
-      });
+  async createAutomatic(
+    frameId: number,
+    file: UploadedVersionFile,
+    contentHash: string,
+    description?: string,
+  ): Promise<VersionResponseDto> {
+    const version = await this.createVersion(frameId, file, {
+      description,
+      contentHash,
+      uploadType: UploadType.automatic,
+    });
 
-      return this.toResponse(version);
-    } catch (error) {
-      this.versionStorage.deleteFile(filename);
-      throw error;
-    }
+    return this.toResponse(version);
   }
 
   async update(
@@ -151,6 +143,40 @@ export class VersionsService {
 
     await this.prisma.version.delete({ where: { id } });
     this.versionStorage.deleteFile(existing.filename);
+  }
+
+  private async createVersion(
+    frameId: number,
+    file: UploadedVersionFile,
+    data: Pick<Version, 'uploadType'> &
+      Partial<Pick<Version, 'description' | 'contentHash'>>,
+  ): Promise<Version> {
+    const latest = await this.prisma.version.findFirst({
+      where: { frameId },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+
+    const nextVersion = (latest?.version ?? 0) + 1;
+    const filename = this.versionStorage.saveVersionFile(
+      frameId,
+      nextVersion,
+      file,
+    );
+
+    try {
+      return await this.prisma.version.create({
+        data: {
+          ...data,
+          frameId,
+          version: nextVersion,
+          filename,
+        },
+      });
+    } catch (error) {
+      this.versionStorage.deleteFile(filename);
+      throw error;
+    }
   }
 
   private async ensureFrameExists(frameId: number): Promise<void> {

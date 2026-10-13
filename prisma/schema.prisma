@@ -18,6 +18,12 @@ enum UploadType {
   automatic
 }
 
+enum SyncStatus {
+  in_progress
+  success
+  error
+}
+
 model User {
   id           Int    @id @default(autoincrement())
   login        String @unique
@@ -46,9 +52,12 @@ model Section {
   id           Int      @id @default(autoincrement())
   figmaId      String?
   projectId    Int
-  name         String
-  description  String?
-  lastModified DateTime @updatedAt
+  name          String
+  description   String?
+  syncStatus    SyncStatus?
+  syncError     String?
+  figmaSyncedAt DateTime?
+  lastModified  DateTime  @updatedAt
 
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   groups    Group[]
@@ -96,6 +105,7 @@ model Version {
   version     Int
   description String?
   filename    String
+  contentHash String?
   uploadType  UploadType @default(manual)
   createdAt   DateTime   @default(now())
 
@@ -104,4 +114,12 @@ model Version {
   @@unique([frameId, version])
   @@index([frameId])
   @@map("version")
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
 }
