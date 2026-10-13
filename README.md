@@ -151,7 +151,7 @@ Backend должен поддерживать автоматическую си�
 - загружать версии вручную;
 - подключать Figma-файл;
 - включать и отключать автоматическую синхронизацию;
-- Настройки для токена Figma и настройка времени синхронизации.
+- Настройки приложения и синхронизация с Figma по расписанию.
 
 На текущем этапе: NestJS + Fastify, PostgreSQL, Prisma, Swagger, пользователи и JWT-авторизация через httpOnly cookie.
 
@@ -261,6 +261,7 @@ yarn start:dev
 - `CORS_ORIGIN` — origin фронтенда для CORS с credentials
 - `UPLOADS_DIR` — каталог загрузок (по умолчанию `uploads`)
 - `PUBLIC_DIR` — каталог собранного фронта (по умолчанию `public`)
+- `FIGMA_TOKEN_SETTING_KEY` — ключ настройки в БД с Personal Access Token Figma (по умолчанию `figma.token`)
 - `FIGMA_SYNC_TIME` — время ежедневной синхронизации с Figma в формате `HH:mm` по часовому поясу сервера (по умолчанию `03:00`)
 - `PRISMA_SCHEMA_ENGINE_BINARY` — путь к бинарнику schema engine для серверов без доступа к CDN Prisma (см. ниже)
 

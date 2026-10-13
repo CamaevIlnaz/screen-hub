@@ -21,6 +21,12 @@ export class UpdateProjectDto {
   figmaId?: string;
 
   @ApiPropertyOptional({
+    example: 'https://www.figma.com/design/AbCdEfGhIjKlMnOpQrStUv/Project',
+    description: 'Ссылка на файл в Figma',
+  })
+  figmaLink?: string;
+
+  @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
     description: 'Превью проекта (png, jpg, webp, svg)',

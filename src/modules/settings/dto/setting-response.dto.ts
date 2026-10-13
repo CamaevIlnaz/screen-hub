@@ -1,15 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SettingResponseDto {
-  @ApiProperty({ example: 'figma.token', description: 'Ключ настройки' })
+  @ApiProperty({ example: 'app.theme', description: 'Ключ настройки' })
   key!: string;
 
-  @ApiPropertyOptional({
-    example: 'figd_****LB29',
-    description: 'Значение настройки (секретные значения маскируются)',
-    nullable: true,
+  @ApiProperty({
+    example: 'dark',
+    description: 'Значение настройки',
   })
-  value!: string | null;
+  value!: string;
+
+  @ApiProperty({
+    example: false,
+    description: 'Доступна без авторизации',
+  })
+  publish!: boolean;
 
   @ApiPropertyOptional({
     example: '2026-10-13T07:00:00.000Z',

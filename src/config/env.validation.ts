@@ -57,6 +57,11 @@ export class EnvironmentVariables {
   PUBLIC_DIR?: string;
 
   @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  FIGMA_TOKEN_SETTING_KEY?: string;
+
+  @IsOptional()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
     message: 'FIGMA_SYNC_TIME должен быть в формате HH:mm',
   })

@@ -7,10 +7,11 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SyncStatus } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { SettingKey, SettingsService } from '../settings/settings.service';
+import { SettingsService } from '../settings/settings.service';
 import { VersionsService } from '../versions/versions.service';
 import { FigmaSyncResultDto } from './dto/figma-sync-result.dto';
 import { FigmaApiError, FigmaApiService, FigmaNode } from './figma-api.service';
@@ -43,6 +44,7 @@ export class FigmaSyncService implements OnModuleInit {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
     private readonly settingsService: SettingsService,
     private readonly figmaApi: FigmaApiService,
     private readonly versionsService: VersionsService,
@@ -96,9 +98,11 @@ export class FigmaSyncService implements OnModuleInit {
   }
 
   async syncAll(): Promise<void> {
-    const token = await this.settingsService.get(SettingKey.figmaToken);
+    const token = await this.getToken();
     if (!token) {
-      this.logger.warn('Figma-токен не задан, синхронизация пропущена');
+      this.logger.warn(
+        'Токен Figma не найден в настройках, синхронизация пропущена',
+      );
       return;
     }
 
@@ -147,9 +151,11 @@ export class FigmaSyncService implements OnModuleInit {
       throw new BadRequestException('У проекта не указан figmaId');
     }
 
-    const token = await this.settingsService.get(SettingKey.figmaToken);
+    const token = await this.getToken();
     if (!token) {
-      throw new BadRequestException('Не задан Figma-токен в настройках');
+      throw new BadRequestException(
+        'Токен Figma не найден в настройках',
+      );
     }
 
     return {
@@ -160,6 +166,12 @@ export class FigmaSyncService implements OnModuleInit {
       fileKey: section.project.figmaId,
       token,
     };
+  }
+
+  private async getToken(): Promise<string | undefined> {
+    const key = this.configService.getOrThrow<string>('figma.tokenSettingKey');
+    const token = await this.settingsService.get(key);
+    return token?.trim() || undefined;
   }
 
   private async runSync(

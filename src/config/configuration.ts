@@ -15,6 +15,7 @@ export default () => ({
     expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   },
   figma: {
+    tokenSettingKey: process.env.FIGMA_TOKEN_SETTING_KEY ?? 'figma.token',
     syncTime: process.env.FIGMA_SYNC_TIME ?? '03:00',
   },
 });

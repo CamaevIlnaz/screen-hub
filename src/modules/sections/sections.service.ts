@@ -56,6 +56,7 @@ export class SectionsService {
         name: dto.name,
         description: dto.description,
         figmaId: dto.figmaId,
+        figmaLink: dto.figmaLink,
       },
     });
 
@@ -71,6 +72,7 @@ export class SectionsService {
         name: dto.name,
         description: dto.description,
         figmaId: dto.figmaId,
+        figmaLink: dto.figmaLink,
       },
     });
 
@@ -111,6 +113,7 @@ export class SectionsService {
       name: section.name,
       description: section.description,
       figmaId: section.figmaId,
+      figmaLink: section.figmaLink,
       syncStatus: section.syncStatus,
       syncError: section.syncError,
       figmaSyncedAt: section.figmaSyncedAt,

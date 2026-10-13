@@ -41,7 +41,8 @@ export class SectionFigmaSyncController {
     type: FigmaSyncResultDto,
   })
   @ApiBadRequestResponse({
-    description: 'Не заполнен figmaId раздела/проекта или Figma-токен',
+    description:
+      'Не заполнен figmaId раздела/проекта или токен Figma в настройках',
     type: ErrorResponseDto,
   })
   @ApiUnauthorizedResponse({

@@ -36,15 +36,14 @@ export class JwtAuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (isPublic) {
-      return true;
-    }
-
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const cookieName = this.configService.getOrThrow<string>('app.cookieName');
     const token = request.cookies?.[cookieName];
 
     if (!token) {
+      if (isPublic) {
+        return true;
+      }
       throw new UnauthorizedException('Требуется авторизация');
     }
 
@@ -61,6 +60,9 @@ export class JwtAuthGuard implements CanActivate {
 
       return true;
     } catch {
+      if (isPublic) {
+        return true;
+      }
       throw new UnauthorizedException('Недействительный токен');
     }
   }

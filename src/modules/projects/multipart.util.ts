@@ -6,6 +6,7 @@ export type ProjectMultipartPayload = {
   name?: string;
   description?: string;
   figmaId?: string;
+  figmaLink?: string;
   preview?: UploadedProjectFile;
 };
 
@@ -47,6 +48,8 @@ export async function parseProjectMultipart(
         payload.description = value;
       } else if (part.fieldname === 'figmaId') {
         payload.figmaId = value;
+      } else if (part.fieldname === 'figmaLink') {
+        payload.figmaLink = value;
       }
     }
   } catch (error) {

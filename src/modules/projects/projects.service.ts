@@ -53,6 +53,7 @@ export class ProjectsService {
         name: payload.name,
         description: payload.description,
         figmaId: payload.figmaId,
+        figmaLink: payload.figmaLink,
       },
     });
 
@@ -88,6 +89,7 @@ export class ProjectsService {
       payload.name !== undefined ||
       payload.description !== undefined ||
       payload.figmaId !== undefined ||
+      payload.figmaLink !== undefined ||
       payload.preview !== undefined;
 
     if (!hasFields) {
@@ -115,6 +117,9 @@ export class ProjectsService {
             ? { description: payload.description }
             : {}),
           ...(payload.figmaId !== undefined ? { figmaId: payload.figmaId } : {}),
+          ...(payload.figmaLink !== undefined
+            ? { figmaLink: payload.figmaLink }
+            : {}),
           ...(payload.preview ? { preview } : {}),
         },
       });
@@ -152,6 +157,7 @@ export class ProjectsService {
       name: project.name,
       description: project.description,
       figmaId: project.figmaId,
+      figmaLink: project.figmaLink,
       preview: project.preview,
       lastModified: project.lastModified,
       createdAt: project.createdAt,

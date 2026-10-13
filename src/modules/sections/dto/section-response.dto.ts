@@ -26,6 +26,14 @@ export class SectionResponseDto {
   figmaId!: string | null;
 
   @ApiPropertyOptional({
+    example:
+      'https://www.figma.com/design/AbCdEfGhIjKlMnOpQrStUv/Project?node-id=12-34',
+    description: 'Ссылка на ноду в Figma',
+    nullable: true,
+  })
+  figmaLink!: string | null;
+
+  @ApiPropertyOptional({
     enum: SyncStatus,
     example: SyncStatus.success,
     description:

@@ -25,6 +25,13 @@ export class ProjectResponseDto {
   figmaId!: string | null;
 
   @ApiPropertyOptional({
+    example: 'https://www.figma.com/design/AbCdEfGhIjKlMnOpQrStUv/Project',
+    description: 'Ссылка на файл в Figma',
+    nullable: true,
+  })
+  figmaLink!: string | null;
+
+  @ApiPropertyOptional({
     example: 'projects/1/preview.png',
     description: 'Путь к файлу превью относительно uploads (URL: /uploads/{preview})',
     nullable: true,

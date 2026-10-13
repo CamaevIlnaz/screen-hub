@@ -25,4 +25,14 @@ export class CreateSectionDto {
   @IsString()
   @MaxLength(255)
   figmaId?: string;
+
+  @ApiPropertyOptional({
+    example:
+      'https://www.figma.com/design/AbCdEfGhIjKlMnOpQrStUv/Project?node-id=12-34',
+    description: 'Ссылка на ноду в Figma',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  figmaLink?: string;
 }

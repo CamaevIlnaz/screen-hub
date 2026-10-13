@@ -1,10 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class UpdateSettingDto {
-  @ApiProperty({ example: 'figd_...', description: 'Новое значение настройки' })
+  @ApiPropertyOptional({
+    example: 'dark',
+    description: 'Новое значение настройки',
+  })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MaxLength(2000)
-  value!: string;
+  value?: string;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Доступна без авторизации',
+  })
+  @IsOptional()
+  @IsBoolean()
+  publish?: boolean;
 }

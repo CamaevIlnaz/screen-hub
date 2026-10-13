@@ -37,6 +37,7 @@ model User {
 model Project {
   id           Int      @id @default(autoincrement())
   figmaId      String?
+  figmaLink    String?
   name         String
   description  String?
   preview      String?
@@ -51,6 +52,7 @@ model Project {
 model Section {
   id           Int      @id @default(autoincrement())
   figmaId      String?
+  figmaLink    String?
   projectId    Int
   name          String
   description   String?
@@ -119,6 +121,7 @@ model Version {
 model Setting {
   key       String   @id
   value     String
+  publish   Boolean  @default(false)
   updatedAt DateTime @updatedAt
 
   @@map("settings")
