@@ -1,4 +1,6 @@
 import { plainToInstance, Type } from 'class-transformer';
+import { accessSync, constants, statSync } from 'node:fs';
+import { posix } from 'node:path';
 import {
   IsInt,
   IsNotEmpty,
@@ -69,6 +71,49 @@ export class EnvironmentVariables {
 }
 
 export function validateEnv(config: Record<string, unknown>) {
+  if (
+    config.SFTP_ENABLED !== undefined &&
+    config.SFTP_ENABLED !== 'true' &&
+    config.SFTP_ENABLED !== 'false'
+  ) {
+    throw new Error('SFTP_ENABLED должен быть true или false');
+  }
+  if (config.SFTP_ENABLED === 'true') {
+    for (const key of [
+      'SFTP_HOST',
+      'SFTP_USERNAME',
+      'SFTP_PRIVATE_KEY_PATH',
+      'SFTP_ROOT',
+    ]) {
+      if (typeof config[key] !== 'string' || !config[key].trim())
+        throw new Error(`Не задан ${key}`);
+    }
+    for (const [key, fallback, max] of [
+      ['SFTP_PORT', 22, 65535],
+      ['SFTP_READY_TIMEOUT_MS', 20000, 2147483647],
+    ] as const) {
+      const value = Number(config[key] ?? fallback);
+      if (!Number.isInteger(value) || value < 1 || value > max)
+        throw new Error(`Некорректный ${key}`);
+    }
+    const root = config.SFTP_ROOT as string;
+    if (
+      !posix.isAbsolute(root) ||
+      root.includes('\\') ||
+      root.includes('\0') ||
+      root.split('/').includes('..')
+    )
+      throw new Error('SFTP_ROOT должен быть абсолютным POSIX-путём');
+    try {
+      const keyPath = config.SFTP_PRIVATE_KEY_PATH as string;
+      accessSync(keyPath, constants.R_OK);
+      if (!statSync(keyPath).isFile()) throw new Error();
+    } catch {
+      throw new Error(
+        'SFTP_PRIVATE_KEY_PATH должен указывать на доступный файл ключа',
+      );
+    }
+  }
   const validated = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   });

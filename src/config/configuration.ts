@@ -9,6 +9,16 @@ export default () => ({
     uploadsDir: process.env.UPLOADS_DIR ?? 'uploads',
     publicDir: process.env.PUBLIC_DIR ?? 'public',
   },
+  sftp: {
+    enabled: process.env.SFTP_ENABLED === 'true',
+    host: process.env.SFTP_HOST,
+    port: Number(process.env.SFTP_PORT ?? 22),
+    username: process.env.SFTP_USERNAME,
+    privateKeyPath: process.env.SFTP_PRIVATE_KEY_PATH,
+    passphrase: process.env.SFTP_PASSPHRASE,
+    root: process.env.SFTP_ROOT,
+    readyTimeout: Number(process.env.SFTP_READY_TIMEOUT_MS ?? 20000),
+  },
   databaseUrl: process.env.DATABASE_URL,
   jwt: {
     secret: process.env.JWT_SECRET,

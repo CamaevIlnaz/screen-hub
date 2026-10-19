@@ -1,3 +1,5 @@
+import { Storage } from './storage/storage';
+import { registerUploadsRoute } from './storage/uploads-route';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -48,15 +50,16 @@ async function bootstrap() {
     },
   });
 
-  if (!existsSync(uploadsPath)) {
-    mkdirSync(uploadsPath, { recursive: true });
+  if (configService.get<boolean>('sftp.enabled')) {
+    registerUploadsRoute(app.getHttpAdapter().getInstance(), app.get(Storage));
+  } else {
+    if (!existsSync(uploadsPath)) mkdirSync(uploadsPath, { recursive: true });
+    await app.register(fastifyStatic, {
+      root: uploadsPath,
+      prefix: '/uploads/',
+      decorateReply: false,
+    });
   }
-
-  await app.register(fastifyStatic, {
-    root: uploadsPath,
-    prefix: '/uploads/',
-    decorateReply: false,
-  });
 
   const publicIndex = join(publicPath, 'index.html');
   if (existsSync(publicIndex)) {

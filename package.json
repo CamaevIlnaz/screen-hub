@@ -52,7 +52,8 @@
     "class-validator": "^0.15.1",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "ssh2-sftp-client": "^12.1.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -64,6 +65,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.23.1",
+    "@types/ssh2-sftp-client": "^9.0.6",
     "@types/supertest": "^7.0.0",
     "cross-env": "^10.1.0",
     "eslint": "^9.18.0",

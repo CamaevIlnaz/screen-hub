@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { UploadType, Version } from '@prisma/client';
@@ -11,6 +12,16 @@ import { VersionStorageService } from './version-storage.service';
 
 @Injectable()
 export class VersionsService {
+  private readonly logger = new Logger(VersionsService.name);
+
+  private async cleanupFile(path: string | null | undefined): Promise<void> {
+    try {
+      await this.versionStorage.deleteFile(path);
+    } catch {
+      this.logger.warn('Не удалось удалить неиспользуемый файл хранилища');
+    }
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly versionStorage: VersionStorageService,
@@ -102,33 +113,32 @@ export class VersionsService {
 
     if (file) {
       previousFilename = existing.filename;
-      filename = this.versionStorage.saveVersionFile(
+      filename = await this.versionStorage.saveVersionFile(
         existing.frameId,
         existing.version,
         file,
       );
     }
 
+    let version: Version;
     try {
-      const version = await this.prisma.version.update({
+      version = await this.prisma.version.update({
         where: { id },
         data: {
           filename,
           ...(description !== undefined ? { description } : {}),
         },
       });
-
-      if (previousFilename && previousFilename !== filename) {
-        this.versionStorage.deleteFile(previousFilename);
-      }
-
-      return this.toResponse(version);
     } catch (error) {
       if (previousFilename && filename !== previousFilename) {
-        this.versionStorage.deleteFile(filename);
+        await this.cleanupFile(filename);
       }
       throw error;
     }
+    if (previousFilename && previousFilename !== filename) {
+      await this.cleanupFile(previousFilename);
+    }
+    return this.toResponse(version);
   }
 
   async remove(id: number): Promise<void> {
@@ -142,7 +152,7 @@ export class VersionsService {
     }
 
     await this.prisma.version.delete({ where: { id } });
-    this.versionStorage.deleteFile(existing.filename);
+    await this.cleanupFile(existing.filename);
   }
 
   private async createVersion(
@@ -158,7 +168,7 @@ export class VersionsService {
     });
 
     const nextVersion = (latest?.version ?? 0) + 1;
-    const filename = this.versionStorage.saveVersionFile(
+    const filename = await this.versionStorage.saveVersionFile(
       frameId,
       nextVersion,
       file,
@@ -174,7 +184,7 @@ export class VersionsService {
         },
       });
     } catch (error) {
-      this.versionStorage.deleteFile(filename);
+      await this.cleanupFile(filename);
       throw error;
     }
   }

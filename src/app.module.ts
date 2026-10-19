@@ -1,3 +1,4 @@
+import { StorageModule } from './storage/storage.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -25,6 +26,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     ScheduleModule.forRoot(),
     PrismaModule,
+    StorageModule,
     UsersModule,
     AuthModule,
     ProjectsModule,

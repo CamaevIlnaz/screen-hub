@@ -1,10 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
-import { dirname, extname, join, resolve } from 'node:path';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Storage } from '../../storage/storage';
+import { randomUUID } from 'node:crypto';
+import { extname } from 'node:path';
 
 const ALLOWED_MIME_TO_EXT: Record<string, string> = {
   'image/png': '.png',
@@ -14,13 +11,7 @@ const ALLOWED_MIME_TO_EXT: Record<string, string> = {
   'image/svg+xml': '.svg',
 };
 
-const ALLOWED_EXTENSIONS = new Set([
-  '.png',
-  '.jpg',
-  '.jpeg',
-  '.webp',
-  '.svg',
-]);
+const ALLOWED_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.svg']);
 
 export type UploadedVersionFile = {
   buffer: Buffer;
@@ -30,41 +21,22 @@ export type UploadedVersionFile = {
 
 @Injectable()
 export class VersionStorageService {
-  private readonly uploadsRoot: string;
+  constructor(private readonly storage: Storage) {}
 
-  constructor(private readonly configService: ConfigService) {
-    this.uploadsRoot = resolve(
-      process.cwd(),
-      this.configService.get<string>('app.uploadsDir', 'uploads'),
-    );
-  }
-
-  saveVersionFile(
+  async saveVersionFile(
     frameId: number,
     versionNumber: number,
     file: UploadedVersionFile,
-  ): string {
+  ): Promise<string> {
     const ext = this.resolveExtension(file);
-    const relativePath = `frames/${frameId}/versions/${versionNumber}${ext}`;
-    const absolutePath = join(this.uploadsRoot, relativePath);
-
-    mkdirSync(dirname(absolutePath), { recursive: true });
-    writeFileSync(absolutePath, file.buffer);
+    const relativePath = `frames/${frameId}/versions/${versionNumber}-${randomUUID()}${ext}`;
+    await this.storage.write(relativePath, file.buffer);
 
     return relativePath;
   }
 
-  deleteFile(relativePath: string | null | undefined): void {
-    if (!relativePath) {
-      return;
-    }
-
-    const absolutePath = join(this.uploadsRoot, relativePath);
-    if (!existsSync(absolutePath)) {
-      return;
-    }
-
-    unlinkSync(absolutePath);
+  async deleteFile(relativePath: string | null | undefined): Promise<void> {
+    if (relativePath) await this.storage.delete(relativePath);
   }
 
   private resolveExtension(file: UploadedVersionFile): string {

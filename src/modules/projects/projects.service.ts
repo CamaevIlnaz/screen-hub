@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Project } from '@prisma/client';
@@ -11,6 +12,16 @@ import { ProjectStorageService } from './project-storage.service';
 
 @Injectable()
 export class ProjectsService {
+  private readonly logger = new Logger(ProjectsService.name);
+
+  private async cleanupFile(path: string | null | undefined): Promise<void> {
+    try {
+      await this.projectStorage.deleteFile(path);
+    } catch {
+      this.logger.warn('Не удалось удалить неиспользуемый файл хранилища');
+    }
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly projectStorage: ProjectStorageService,
@@ -61,7 +72,10 @@ export class ProjectsService {
       return this.toResponse(project);
     }
 
-    const preview = this.projectStorage.savePreview(project.id, payload.preview);
+    const preview = await this.projectStorage.savePreview(
+      project.id,
+      payload.preview,
+    );
 
     try {
       const updated = await this.prisma.project.update({
@@ -71,7 +85,7 @@ export class ProjectsService {
 
       return this.toResponse(updated);
     } catch (error) {
-      this.projectStorage.deleteFile(preview);
+      await this.cleanupFile(preview);
       throw error;
     }
   }
@@ -93,7 +107,9 @@ export class ProjectsService {
       payload.preview !== undefined;
 
     if (!hasFields) {
-      throw new BadRequestException('Нужно передать хотя бы одно поле для обновления');
+      throw new BadRequestException(
+        'Нужно передать хотя бы одно поле для обновления',
+      );
     }
 
     if (payload.name !== undefined && !payload.name) {
@@ -105,36 +121,37 @@ export class ProjectsService {
 
     if (payload.preview) {
       previousPreview = existing.preview;
-      preview = this.projectStorage.savePreview(id, payload.preview);
+      preview = await this.projectStorage.savePreview(id, payload.preview);
     }
 
+    let project: Project;
     try {
-      const project = await this.prisma.project.update({
+      project = await this.prisma.project.update({
         where: { id },
         data: {
           ...(payload.name !== undefined ? { name: payload.name } : {}),
           ...(payload.description !== undefined
             ? { description: payload.description }
             : {}),
-          ...(payload.figmaId !== undefined ? { figmaId: payload.figmaId } : {}),
+          ...(payload.figmaId !== undefined
+            ? { figmaId: payload.figmaId }
+            : {}),
           ...(payload.figmaLink !== undefined
             ? { figmaLink: payload.figmaLink }
             : {}),
           ...(payload.preview ? { preview } : {}),
         },
       });
-
-      if (previousPreview && previousPreview !== preview) {
-        this.projectStorage.deleteFile(previousPreview);
-      }
-
-      return this.toResponse(project);
     } catch (error) {
-      if (previousPreview && preview && preview !== previousPreview) {
-        this.projectStorage.deleteFile(preview);
+      if (payload.preview && preview && preview !== previousPreview) {
+        await this.cleanupFile(preview);
       }
       throw error;
     }
+    if (previousPreview && previousPreview !== preview) {
+      await this.cleanupFile(previousPreview);
+    }
+    return this.toResponse(project);
   }
 
   async remove(id: number): Promise<void> {
@@ -148,7 +165,7 @@ export class ProjectsService {
     }
 
     await this.prisma.project.delete({ where: { id } });
-    this.projectStorage.deleteFile(existing.preview);
+    await this.cleanupFile(existing.preview);
   }
 
   private toResponse(project: Project): ProjectResponseDto {
