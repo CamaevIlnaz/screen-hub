@@ -70,14 +70,19 @@ export class EnvironmentVariables {
   FIGMA_SYNC_TIME?: string;
 }
 
-export function validateEnv(config: Record<string, unknown>) {
+function assertBooleanFlag(config: Record<string, unknown>, key: string): void {
   if (
-    config.SFTP_ENABLED !== undefined &&
-    config.SFTP_ENABLED !== 'true' &&
-    config.SFTP_ENABLED !== 'false'
+    config[key] !== undefined &&
+    config[key] !== 'true' &&
+    config[key] !== 'false'
   ) {
-    throw new Error('SFTP_ENABLED должен быть true или false');
+    throw new Error(`${key} должен быть true или false`);
   }
+}
+
+export function validateEnv(config: Record<string, unknown>) {
+  assertBooleanFlag(config, 'SFTP_ENABLED');
+  assertBooleanFlag(config, 'FIGMA_SYNC_ENABLED');
   if (config.SFTP_ENABLED === 'true') {
     for (const key of [
       'SFTP_HOST',

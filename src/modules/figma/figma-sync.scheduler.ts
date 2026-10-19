@@ -13,6 +13,7 @@ const TIMEOUT_NAME = 'figma-sync';
 @Injectable()
 export class FigmaSyncScheduler implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(FigmaSyncScheduler.name);
+  private readonly enabled: boolean;
   private readonly hours: number;
   private readonly minutes: number;
 
@@ -21,11 +22,17 @@ export class FigmaSyncScheduler implements OnModuleInit, OnModuleDestroy {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly figmaSyncService: FigmaSyncService,
   ) {
+    this.enabled =
+      this.configService.get<boolean>('figma.syncEnabled') === true;
     const syncTime = this.configService.getOrThrow<string>('figma.syncTime');
     [this.hours, this.minutes] = syncTime.split(':').map(Number);
   }
 
   onModuleInit(): void {
+    if (!this.enabled) {
+      this.logger.log('Автоматическая синхронизация с Figma отключена');
+      return;
+    }
     this.scheduleNext();
   }
 

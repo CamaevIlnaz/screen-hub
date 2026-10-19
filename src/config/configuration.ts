@@ -26,6 +26,7 @@ export default () => ({
   },
   figma: {
     tokenSettingKey: process.env.FIGMA_TOKEN_SETTING_KEY ?? 'figma.token',
+    syncEnabled: process.env.FIGMA_SYNC_ENABLED === 'true',
     syncTime: process.env.FIGMA_SYNC_TIME ?? '03:00',
   },
 });

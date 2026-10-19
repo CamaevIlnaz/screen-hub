@@ -262,6 +262,7 @@ yarn start:dev
 - `UPLOADS_DIR` — каталог загрузок (по умолчанию `uploads`)
 - `PUBLIC_DIR` — каталог собранного фронта (по умолчанию `public`)
 - `FIGMA_TOKEN_SETTING_KEY` — ключ настройки в БД с Personal Access Token Figma (по умолчанию `figma.token`)
+- `FIGMA_SYNC_ENABLED` — `true` запускает ежедневную синхронизацию с Figma при старте приложения. `false` или отсутствие флага оставляет планировщик выключенным. Ручной запуск синхронизации раздела при этом доступен
 - `FIGMA_SYNC_TIME` — время ежедневной синхронизации с Figma в формате `HH:mm` по часовому поясу сервера (по умолчанию `03:00`)
 - `PRISMA_SCHEMA_ENGINE_BINARY` — путь к бинарнику schema engine для серверов без доступа к CDN Prisma (см. ниже)
 
