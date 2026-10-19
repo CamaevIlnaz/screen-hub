@@ -85,6 +85,10 @@ async function bootstrap() {
 
       return reply.sendFile('index.html');
     });
+
+    // Nest ставит свой not-found handler в init(). Fastify разрешает
+    // только один обработчик на prefix `/`, повторный вызов роняет старт.
+    app.getHttpAdapter().setNotFoundHandler = () => undefined;
   }
 
   app.enableCors({
